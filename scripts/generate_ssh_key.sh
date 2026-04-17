@@ -1,7 +1,12 @@
 #!/bin/bash
 
-KEY_PATH="$HOME/.ssh/secure_ssh_project_key"
+SSH_DIR="$HOME/.ssh"
+KEY_PATH="$SSH_DIR/secure_ssh_project_key"
 COMMENT="secure-ssh-access-automation"
+
+# Ensure .ssh directory exists
+mkdir -p "$SSH_DIR"
+chmod 700 "$SSH_DIR"
 
 if [ -f "$KEY_PATH" ]; then
   echo "SSH key already exists at $KEY_PATH"
