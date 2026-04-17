@@ -30,40 +30,46 @@
   ## Step 3 - Linux Server Hardening
 
 ### Objective
-Secure SSH access by disabling insecure authentication methods and enforcing key-based login.
+Secure SSH access by eliminating insecure authentication methods and enforcing key-based authentication.
 
 ### Environment
-- Server IP: <local-server-ip>
+- Server IP: `<local-server-ip>`
 - OS: Ubuntu 24.04 LTS
 
 ### Actions Performed
-- Backed up existing SSH configuration file:
+- Created a backup of the SSH configuration file:
   - /etc/ssh/sshd_config → sshd_config.backup
 - Disabled root login:
   - PermitRootLogin no
-- Disabled password authentication:
+- Disabled password-based authentication:
   - PasswordAuthentication no
 - Enabled public key authentication:
   - PubkeyAuthentication yes
 - Disabled challenge-response authentication:
   - ChallengeResponseAuthentication no
-- Restricted SSH access to specific user:
+- Restricted SSH access to a specific user:
   - AllowUsers deepika
 
 ### Configuration Approach
-- Added security settings at the end of sshd_config to override default values
-- Restarted SSH service:
+- Updated sshd_config by adding security settings at the end of the file to override defaults
+- Restarted SSH service to apply changes:
   - sudo systemctl restart ssh
 
 ### Verification
-- Successful login using SSH key:
+- Verified successful SSH login using key-based authentication:
   - ssh -i ~/.ssh/secure_ssh_project_key deepika@<local-server-ip>
-- Password login blocked:
+- Verified password-based login is blocked:
   - ssh deepika@<local-server-ip>
   - Result: Permission denied (publickey)
 
 ### Security Outcome
-- Eliminated password-based authentication (reducing brute-force risk)
-- Enforced SSH key-based secure access
-- Restricted server access to authorized users only
-- Improved overall Linux server security posture
+- Eliminated risk of brute-force attacks by disabling password authentication
+- Enforced secure SSH key-based access
+- Restricted access to authorized users only
+- Strengthened overall Linux server security posture
+
+### Notes
+- Verified SSH key permissions:
+  - ~/.ssh → 700
+  - ~/.ssh/authorized_keys → 600
+- Maintained an active session during configuration to prevent lockout
