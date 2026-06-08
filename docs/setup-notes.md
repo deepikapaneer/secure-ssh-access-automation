@@ -78,3 +78,43 @@ Secure SSH access by eliminating insecure authentication methods and enforcing k
   - `~/.ssh` → `700`
   - `~/.ssh/authorized_keys` → `600`
 - Maintained an active session during configuration to prevent lockout
+
+## Step 4 - Ansible SSH Key Automation
+
+### Objective
+Automate SSH key distribution using Ansible.
+
+### Environment
+- Single-node lab environment
+- Control Node: Ubuntu VM
+- Managed Node: localhost
+- Inventory: `localhost ansible_connection=local`
+
+### Actions Performed
+- Created Ansible inventory file: `ansible/inventory.ini`
+- Created Ansible playbook: `ansible/playbook.yml`
+- Automated creation of `.ssh` directory with secure permissions
+- Automated addition of SSH public key into `authorized_keys`
+- Verified `authorized_keys` exists using Ansible `stat` module
+
+### Verification
+- Ran:
+  - `ansible-playbook -i inventory.ini playbook.yml`
+- Result:
+  - `ok=5`
+  - `changed=1`
+  - `failed=0`
+- Verification message:
+  - `authorized_keys exists: True`
+
+### Outcome
+- Automated SSH key management using Ansible
+- Reduced manual SSH key setup
+- Demonstrated configuration management and Linux automation skills
+
+### Skills Demonstrated
+
+- Linux Administration
+- SSH Key Management
+- Ansible Automation
+- Configuration Management

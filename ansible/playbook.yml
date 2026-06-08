@@ -1,0 +1,33 @@
+---
+- name: SSH Key Automation
+  hosts: servers
+  become: yes
+
+  vars:
+    ssh_user: deepika
+    ssh_home: "/home/deepika"
+
+  tasks:
+
+    - name: Ensure .ssh directory exists
+      file:
+        path: "{{ ssh_home }}/.ssh"
+        state: directory
+        owner: "{{ ssh_user }}"
+        group: "{{ ssh_user }}"
+        mode: '0700'
+
+    - name: Add SSH public key to authorized_keys
+      authorized_key:
+        user: "{{ ssh_user }}"
+        state: present
+        key: "{{ lookup('file', '/home/deepika/.ssh/secure_ssh_project_key.pub') }}"
+
+    - name: Verify authorized_keys exists
+      stat:
+        path: "{{ ssh_home }}/.ssh/authorized_keys"
+      register: auth_key
+
+    - name: Display verification result
+      debug:
+        msg: "authorized_keys exists: {{ auth_key.stat.exists }}"
