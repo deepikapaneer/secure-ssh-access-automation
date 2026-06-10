@@ -1,29 +1,75 @@
+# Setup Notes - Secure SSH Access Automation
+
 ## Step 1 - Project Setup
 
-- Created project folder: `secure-ssh-access-automation`
-- Initialized Git repository using `git init`
-- Created project structure:
-  - `docs/`
-  - `scripts/`
-  - `ansible/`
-  - `.github/workflows/`
-  - `screenshots/`
-- Added initial `README.md` with project overview
-- Created `.gitignore` to exclude sensitive files such as SSH keys, logs, and environment files
-- Made scripts executable
-- Performed initial Git commit
+### Objective
+
+Create a structured GitHub project for SSH security automation and Linux administration.
+
+### Actions Performed
+
+* Created project folder: `secure-ssh-access-automation`
+* Initialized Git repository using `git init`
+* Created project structure:
+
+  * `docs/`
+  * `scripts/`
+  * `ansible/`
+  * `.github/workflows/`
+  * `screenshots/`
+* Added initial `README.md`
+* Created `.gitignore` to exclude sensitive files such as SSH keys, logs, and environment files
+* Made scripts executable
+* Performed initial Git commit
+
+### Outcome
+
+* Established a structured project repository
+* Prepared environment for Linux automation development
+
+---
 
 ## Step 2 - SSH Key Generation and Login Test
 
-- Generated Ed25519 SSH key pair for the project
-- Stored keys in `~/.ssh/secure_ssh_project_key`
-- Automated key generation using script
-- Copied public key to Linux server using `ssh-copy-id`
-- Verified passwordless SSH login
-- Confirmed key entry in `~/.ssh/authorized_keys`
-- Set secure permissions:
-  - `~/.ssh` → `700`
-  - `authorized_keys` → `600`
+### Objective
+
+Implement secure SSH key-based authentication.
+
+### Actions Performed
+
+* Generated Ed25519 SSH key pair
+
+* Stored keys in:
+
+  `~/.ssh/secure_ssh_project_key`
+
+* Automated key generation using Bash script
+
+* Copied public key to Linux server using `ssh-copy-id`
+
+* Verified passwordless SSH login
+
+* Confirmed public key entry in:
+
+  `~/.ssh/authorized_keys`
+
+* Applied secure permissions:
+
+  * `.ssh` → `700`
+  * `authorized_keys` → `600`
+
+### Verification
+
+Successfully connected using:
+
+`ssh -i ~/.ssh/secure_ssh_project_key deepika@<private-ip>`
+
+### Outcome
+
+* Implemented secure SSH key authentication
+* Eliminated dependency on password-based access
+
+---
 
 ## Step 3 - Linux Server Hardening
 
@@ -33,161 +79,230 @@ Secure SSH access by eliminating insecure authentication methods and enforcing k
 
 ### Environment
 
-- Server IP: `<local-server-ip>`
-- OS: Ubuntu 24.04 LTS
+* Server Type: Ubuntu Linux Server Lab Environment
+* OS: Ubuntu 24.04 LTS
 
 ### Actions Performed
 
-- Created a backup of the SSH configuration file:
-  - `/etc/ssh/sshd_config` → `sshd_config.backup`
-- Disabled root login:
-  - `PermitRootLogin no`
-- Disabled password-based authentication:
-  - `PasswordAuthentication no`
-- Enabled public key authentication:
-  - `PubkeyAuthentication yes`
-- Disabled challenge-response authentication:
-  - `ChallengeResponseAuthentication no`
-- Restricted SSH access to a specific user:
-  - `AllowUsers deepika`
+Initial hardening was performed manually to validate the configuration:
 
-### Configuration Approach
+* Created backup of SSH configuration file
+* Disabled root login
+* Disabled password authentication
+* Enabled public key authentication
+* Disabled keyboard-interactive authentication
+* Restricted SSH access to authorized users
 
-- Updated `sshd_config` by adding security settings at the end of the file to override defaults
-- Restarted SSH service to apply changes:
-  - `sudo systemctl restart ssh`
+### Hardening Configuration
+
+```text
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+KbdInteractiveAuthentication no
+AllowUsers deepika
+```
 
 ### Verification
 
-- Verified successful SSH login using key-based authentication:
-  - `ssh -i ~/.ssh/secure_ssh_project_key deepika@<local-server-ip>`
-- Verified password-based login is blocked:
-  - `ssh deepika@<local-server-ip>`
-  - Result: `Permission denied (publickey)`
+* Verified successful SSH login using SSH keys
+* Verified password-based login was blocked
+* Confirmed active SSH configuration using:
+
+  `sudo sshd -T`
 
 ### Security Outcome
 
-- Eliminated risk of brute-force attacks by disabling password authentication
-- Enforced secure SSH key-based access
-- Restricted access to authorized users only
-- Strengthened overall Linux server security posture
+* Reduced brute-force attack risk
+* Enforced SSH key-based authentication
+* Restricted server access to authorized users
+* Improved overall Linux server security
 
 ### Notes
 
-- Verified SSH key permissions:
-  - `~/.ssh` → `700`
-  - `~/.ssh/authorized_keys` → `600`
-- Maintained an active session during configuration to prevent lockout
+* Initial hardening was performed manually
+* SSH hardening was later automated using Ansible in Step 4
 
-## Step 4 - Ansible SSH Key Automation
+---
+
+## Step 4 - Ansible SSH Access Automation
 
 ### Objective
-Automate SSH key distribution using Ansible.
+
+Automate SSH key deployment and SSH security hardening using Ansible.
 
 ### Environment
-- Single-node lab environment
-- Control Node: Ubuntu VM
-- Managed Node: localhost
-- Inventory: `localhost ansible_connection=local`
 
-### Actions Performed
-- Created Ansible inventory file: `ansible/inventory.ini`
-- Created Ansible playbook: `ansible/playbook.yml`
-- Automated creation of `.ssh` directory with secure permissions
-- Automated addition of SSH public key into `authorized_keys`
-- Verified `authorized_keys` exists using Ansible `stat` module
+* Ubuntu 24.04 LTS
+* Single-node lab environment
+* Control Node: Ubuntu VM
+* Managed Node: localhost
 
-### Verification
-- Ran:
-  - `ansible-playbook -i inventory.ini playbook.yml`
-- Result:
-  - `ok=5`
-  - `changed=1`
-  - `failed=0`
-- Verification message:
-  - `authorized_keys exists: True`
+### Files Created
 
-### Outcome
-- Automated SSH key management using Ansible
-- Reduced manual SSH key setup
-- Demonstrated configuration management and Linux automation skills
-
-### Skills Demonstrated
-
-- Linux Administration
-- SSH Key Management
-- Ansible Automation
-- Configuration Management
-
-### Additional Automation
-
-Enhanced Ansible playbook to automate SSH hardening by:
-
-- Disabling root login
-- Disabling password authentication
-- Enabling public key authentication
-- Disabling keyboard-interactive authentication
-- Restarting SSH service automatically
-- Verifying effective SSH configuration
-
-## Step 5 - SSH Key Rotation Script
-
-### Objective
-Implement SSH key rotation to replace old keys with new keys while keeping a backup for recovery.
-
-### Actions Performed
-- Created `scripts/rotate_ssh_key.sh`
-- Backed up existing SSH private and public keys before rotation
-- Generated a new Ed25519 SSH key pair
-- Applied secure permissions to the new key files
-- Re-ran Ansible playbook to deploy the new public key
-
-### Verification
-- Confirmed old key was backed up
-- Confirmed new key pair was generated
-- Verified new public key was added to `authorized_keys`
-- Tested SSH login using the rotated key
-
-### Outcome
-- Demonstrated SSH key lifecycle management
-- Improved security by supporting key rotation
-- Added practical Linux administration automation
-
-## Step 6 - SSH Connection Validation Script
-
-### Objective
-
-Automate SSH connectivity testing to validate server access and authentication.
+* `ansible/inventory.ini`
+* `ansible/ansible.cfg`
+* `ansible/playbook.yml`
 
 ### Actions Performed
 
-- Created `scripts/test_ssh_connection.sh`
-- Implemented server IP validation
-- Automated SSH connection testing using key-based authentication
-- Executed remote hostname command to verify successful login
+The Ansible playbook automates:
+
+* Creation of `.ssh` directory
+* Application of secure directory permissions
+* Deployment of SSH public key to `authorized_keys`
+* Verification of SSH key deployment
+* Disabling root login
+* Disabling password authentication
+* Enabling public key authentication
+* Disabling keyboard-interactive authentication
+* Automatic SSH service restart
+* Verification of effective SSH configuration
 
 ### Verification
 
 Executed:
 
-`./test_ssh_connection.sh <server-ip>`
+`ansible-playbook playbook.yml`
 
-Result:
+Results:
 
-- SSH connection established successfully
-- Remote hostname returned:
-  - `devops-master`
+* SSH public key deployed successfully
+* SSH hardening configuration applied successfully
+* SSH service restarted automatically
+* Effective SSH configuration verified
 
 ### Outcome
 
-- Automated SSH access validation
-- Simplified connectivity troubleshooting
-- Demonstrated Bash scripting and Linux automation skills
+* Automated SSH access management
+* Automated SSH hardening
+* Reduced manual administration effort
+* Improved configuration consistency
+* Demonstrated Infrastructure Automation and Configuration Management
 
 ### Skills Demonstrated
 
-- Bash Scripting
-- Linux Administration
-- SSH Authentication
-- Automation
-- Troubleshooting
+* Linux Administration
+* SSH Security
+* SSH Hardening
+* SSH Key Management
+* Ansible Automation
+* Configuration Management
+* Infrastructure as Code (IaC)
+
+---
+
+## Step 5 - SSH Key Rotation Script
+
+### Objective
+
+Implement SSH key rotation to replace old keys with new keys while maintaining backup copies for recovery.
+
+### Actions Performed
+
+* Created:
+
+  `scripts/rotate_ssh_key.sh`
+
+* Backed up existing SSH keys
+
+* Generated new Ed25519 SSH key pair
+
+* Applied secure file permissions
+
+* Re-ran Ansible playbook to deploy updated public key
+
+### Verification
+
+* Confirmed backup directory creation
+* Confirmed new SSH key generation
+* Verified public key deployment
+* Successfully authenticated using rotated SSH key
+
+### Outcome
+
+* Demonstrated SSH key lifecycle management
+* Improved security through credential rotation
+* Added practical Linux administration automation
+
+---
+
+## Step 6 - SSH Connection Validation Script
+
+### Objective
+
+Automate SSH connectivity testing and authentication validation.
+
+### Actions Performed
+
+Created:
+
+`scripts/test_ssh_connection.sh`
+
+The script:
+
+* Accepts server IP as input
+* Validates SSH connectivity
+* Uses SSH key authentication
+* Executes remote hostname command
+* Reports success or failure
+
+### Verification
+
+Executed:
+
+`./test_ssh_connection.sh <private-ip>`
+
+Result:
+
+```text
+Testing SSH connection to <private-ip>
+devops-master
+SSH connection successful.
+```
+
+### Outcome
+
+* Automated SSH connectivity validation
+* Simplified troubleshooting
+* Verified post-deployment access
+* Demonstrated Bash scripting and Linux automation
+
+### Skills Demonstrated
+
+* Bash Scripting
+* Linux Administration
+* SSH Authentication
+* Automation
+* Troubleshooting
+
+---
+
+## Project Outcomes
+
+This project successfully automated:
+
+* SSH key generation
+* SSH key deployment
+* SSH security hardening
+* SSH key rotation
+* SSH connectivity validation
+
+Technologies used:
+
+* Ubuntu Linux
+* OpenSSH
+* Bash
+* Ansible
+* Git
+* GitHub
+
+Key skills demonstrated:
+
+* Linux Administration
+* SSH Security
+* Bash Scripting
+* Ansible Automation
+* Configuration Management
+* Infrastructure Automation
+* Troubleshooting
