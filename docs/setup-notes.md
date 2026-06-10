@@ -118,3 +118,65 @@ Automate SSH key distribution using Ansible.
 - SSH Key Management
 - Ansible Automation
 - Configuration Management
+
+## Step 5 - SSH Key Rotation Script
+
+### Objective
+Implement SSH key rotation to replace old keys with new keys while keeping a backup for recovery.
+
+### Actions Performed
+- Created `scripts/rotate_ssh_key.sh`
+- Backed up existing SSH private and public keys before rotation
+- Generated a new Ed25519 SSH key pair
+- Applied secure permissions to the new key files
+- Re-ran Ansible playbook to deploy the new public key
+
+### Verification
+- Confirmed old key was backed up
+- Confirmed new key pair was generated
+- Verified new public key was added to `authorized_keys`
+- Tested SSH login using the rotated key
+
+### Outcome
+- Demonstrated SSH key lifecycle management
+- Improved security by supporting key rotation
+- Added practical Linux administration automation
+
+## Step 6 - SSH Connection Validation Script
+
+### Objective
+
+Automate SSH connectivity testing to validate server access and authentication.
+
+### Actions Performed
+
+- Created `scripts/test_ssh_connection.sh`
+- Implemented server IP validation
+- Automated SSH connection testing using key-based authentication
+- Executed remote hostname command to verify successful login
+
+### Verification
+
+Executed:
+
+`./test_ssh_connection.sh <server-ip>`
+
+Result:
+
+- SSH connection established successfully
+- Remote hostname returned:
+  - `devops-master`
+
+### Outcome
+
+- Automated SSH access validation
+- Simplified connectivity troubleshooting
+- Demonstrated Bash scripting and Linux automation skills
+
+### Skills Demonstrated
+
+- Bash Scripting
+- Linux Administration
+- SSH Authentication
+- Automation
+- Troubleshooting
