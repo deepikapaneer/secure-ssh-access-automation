@@ -1,11 +1,12 @@
 ---
-- name: SSH Key Automation
+- name: SSH Access Automation and Hardening
   hosts: servers
   become: yes
 
   vars:
     ssh_user: deepika
     ssh_home: "/home/deepika"
+    ssh_public_key_path: "/home/deepika/.ssh/secure_ssh_project_key.pub"
 
   tasks:
 
@@ -21,7 +22,7 @@
       authorized_key:
         user: "{{ ssh_user }}"
         state: present
-        key: "{{ lookup('file', '/home/deepika/.ssh/secure_ssh_project_key.pub') }}"
+        key: "{{ lookup('file', ssh_public_key_path) }}"
 
     - name: Verify authorized_keys exists
       stat:
@@ -31,3 +32,32 @@
     - name: Display verification result
       debug:
         msg: "authorized_keys exists: {{ auth_key.stat.exists }}"
+
+    - name: Harden SSH configuration
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?{{ item.key }}"
+        line: "{{ item.key }} {{ item.value }}"
+        backup: yes
+      loop:
+        - { key: "PermitRootLogin", value: "no" }
+        - { key: "PasswordAuthentication", value: "no" }
+        - { key: "PubkeyAuthentication", value: "yes" }
+        - { key: "KbdInteractiveAuthentication", value: "no" }
+      notify: Restart SSH
+
+    - name: Verify effective SSH hardening settings
+      command: sshd -T
+      register: sshd_effective_config
+      changed_when: false
+
+    - name: Display SSH hardening verification
+      debug:
+        msg:
+          - "{{ sshd_effective_config.stdout_lines | select('search', 'permitrootlogin|passwordauthentication|pubkeyauthentication|kbdinteractiveauthentication') | list }}"
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted

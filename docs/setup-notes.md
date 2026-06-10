@@ -119,6 +119,17 @@ Automate SSH key distribution using Ansible.
 - Ansible Automation
 - Configuration Management
 
+### Additional Automation
+
+Enhanced Ansible playbook to automate SSH hardening by:
+
+- Disabling root login
+- Disabling password authentication
+- Enabling public key authentication
+- Disabling keyboard-interactive authentication
+- Restarting SSH service automatically
+- Verifying effective SSH configuration
+
 ## Step 5 - SSH Key Rotation Script
 
 ### Objective
